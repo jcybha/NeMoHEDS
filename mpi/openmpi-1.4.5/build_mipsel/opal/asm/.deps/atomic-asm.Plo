@@ -1,0 +1,13 @@
+atomic-asm.lo: atomic-asm.S /usr/include/sys/asm.h /usr/include/sgidefs.h \
+ /usr/include/regdef.h /usr/include/sys/regdef.h \
+ /usr/include/sys/fpregdef.h
+
+/usr/include/sys/asm.h:
+
+/usr/include/sgidefs.h:
+
+/usr/include/regdef.h:
+
+/usr/include/sys/regdef.h:
+
+/usr/include/sys/fpregdef.h:

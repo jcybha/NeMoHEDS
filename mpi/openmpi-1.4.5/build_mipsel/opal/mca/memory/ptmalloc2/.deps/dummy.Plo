@@ -1,0 +1,1 @@
+dummy.lo: ../../../../../opal/mca/memory/ptmalloc2/dummy.c
