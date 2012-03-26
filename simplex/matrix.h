@@ -8,6 +8,12 @@ typedef struct {
 	FRACTION * f;
 } MATRIX;
 
+#ifdef _DEBUG
+#define PRINT_MATRIX(X) print_matrix(X)
+#else
+#define PRINT_MATRIX(X)
+#endif
+
 FRACTION * get_frac(MATRIX * m, int row, int col);
 MATRIX * allocate_matrix(int row, int col);
 

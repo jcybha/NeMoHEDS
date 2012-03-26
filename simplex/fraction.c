@@ -158,7 +158,7 @@ int comparef(const FRACTION * f1, const FRACTION * f2) {
 
 void print_fraction(const FRACTION * f) {
 	if (is_integer(f))
-		printf("%9d", f->num);
+		printf("%d", f->num);
 	else
-		printf("%4d/%4d", f->num, f->dem);
+		printf("%d/%d", f->num, f->dem);
 }

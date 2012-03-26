@@ -6,12 +6,15 @@
 static FRACTION * simplex_iter(MATRIX * m);
 
 FRACTION * simplex(MATRIX * m) {
-
+	int i = 0;
 	FRACTION * result;
 
+	PRINT_MATRIX(m);
 	while ((result = simplex_iter(m)) == NULL) {
+		PRINT("Interation Step %d is done\n", ++i);
+		PRINT_MATRIX(m);
 	}
-	printf("END\n");
+	PRINT("End of Simplex\n");
 
 	return result;
 }
@@ -31,7 +34,6 @@ static int find_pivot_col(MATRIX * m) {
 		}
 	}
 
-print_fraction(&min); printf("GOT\n"); 
 	if (comparei(&min, 0) <= 0)
 //	if (comparei(&min, 0) >= 0)
 		return -1;
@@ -49,16 +51,12 @@ static int find_pivot_row(MATRIX * m, int pivot_col) {
 		FRACTION ratio;
 		FRACTION * f = get_frac(m, i, pivot_col);
 		if (comparei(f, 0) == 0)
-{printf("F=0 (i=%d)\n", i);
 			continue;
-}
 
 		divf(&ratio, get_frac(m, i, m->col - 1), f);
 
 		if (comparei(&ratio, 0) == 0 && comparei(f, 0) < 0)
-{printf("ratio "); print_fraction(&ratio); printf("f="); print_fraction(f); printf(" (i=%d)\n", i);
 			continue;
-}
 
 		if (pivot_row == -1 || comparef(&ratio, &min) < 0) {
 			pivot_row = i;
@@ -75,9 +73,7 @@ static void divide_pivot_row(MATRIX * m, int pivot_row, int pivot_col) {
 	assignf(&pivot, get_frac(m, pivot_row, pivot_col));
 
 	for (i = 0; i < m->col; i++) {
-printf("%d t=", i); print_fraction(get_frac(m, pivot_row, i)); printf("/ "); print_fraction(&pivot); printf("\n");
 		divf(get_frac(m, pivot_row, i), get_frac(m, pivot_row, i), &pivot);
-printf("result="); print_fraction(get_frac(m, pivot_row, i)); printf("\n");
 	}
 }
 
@@ -107,25 +103,21 @@ static FRACTION * simplex_iter(MATRIX * m) {
 	int pivot_col;
 	int pivot_row;
 
-	print_matrix(m);
-
 	// step 1: find the pivot column
 	pivot_col = find_pivot_col(m);
-printf("PIVOTCOL: %d\n", pivot_col);
+	PRINT("Pivot Column: %d\n", pivot_col);
 	if (pivot_col < 0)
 		return get_frac(m, 0, m->col - 1);
 
 	// step 2: find the pivot row and the pivot value
 	pivot_row = find_pivot_row(m, pivot_col);
-printf("PIVOTROW: %d\n", pivot_row);
+	PRINT("Pivot row: %d\n", pivot_row);
 
 	// step 3: divide the pivot row by the pivot value
 	divide_pivot_row(m, pivot_row, pivot_col);
-print_matrix(m);
 
 	// step 4: eliminate values in the pivot column from other rows
 	eliminate_pivot_col(m, pivot_row, pivot_col);
-print_matrix(m);
 
 	return NULL;
 }

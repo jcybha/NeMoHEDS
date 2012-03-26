@@ -1,2 +1,2 @@
 all:
-	gcc *.c -o test -Wall -g
+	gcc *.c -o test -Wall -g -D_DEBUG

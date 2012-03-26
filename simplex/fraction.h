@@ -5,6 +5,14 @@ typedef struct {
 	int dem; /* demoninator */
 } FRACTION;
 
+#ifdef _DEBUG
+#define PRINT_FRACTION(X) print_fraction(X)
+#define PRINT(...) printf(__VA_ARGS__)
+#else
+#define PRINT_FRACTION(X)
+#define PRINT(...)
+#endif
+
 
 int is_valid(const FRACTION * f);
 int is_integer(const FRACTION * f);
