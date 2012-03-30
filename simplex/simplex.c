@@ -144,14 +144,20 @@ static void eliminate_pivot_col(MATRIX * m, int pivot_row, int pivot_col, FRACTI
 				printf("-------------\n");
 			}
 #endif
-			/* update zj */
-			FRACTION *basis = get_frac(m, 0, pivot_col);
-			FRACTION *val = get_frac(m, i, j);
-			FRACTION tzj; mulf(&tzj, basis, val);
-			FRACTION *zj = get_frac(m, m->row-2, j);
-			addf(zj, zj, &tzj);
 		}
 		
+	}
+
+	/* update zj */
+	for (j = 1; j < m->col-1; j++) {
+		FRACTION *zj = get_frac(m, m->row-2, j);
+		zj->num = 0; zj->dem = 0;
+		for (i = 1; i < m->row-3; i++) {
+			FRACTION *basis = get_frac(m, i, 0);
+			FRACTION *val = get_frac(m, i, j);
+			FRACTION tzj; mulf(&tzj, basis, val);
+			addf(zj, zj, &tzj);
+		}
 	}
 }
 
@@ -169,7 +175,7 @@ static int check_finish(MATRIX * m) {
 void calculate_cj_minus_zj(MATRIX *m) {
 	int i;
 	for (i = 1; i < m->col - 2; i++) {
-		FRACTION *cj = get_frac(m, 0, i);
+		FRACTION *cj = get_frac(m, m->row-3, i);
 		FRACTION *zj = get_frac(m, m->row-2, i);
 		FRACTION *cj_zj = get_frac(m, m->row-1, i);
 		subf(cj_zj, cj, zj);
@@ -183,29 +189,48 @@ static FRACTION * simplex_iter(MATRIX * m) {
 
 	// step 0: calculate cj - zj
 	calculate_cj_minus_zj(m);
-	if (check_finish(m))
+	if (check_finish(m)) {
+		printf("Finished -------------------\n");
+		print_matrix(m);
+		printf("-------------------------------------------------------------------\n");
 		return get_frac(m, 0, m->col - 1);
+	} else {
+		printf("step 0: calculate cj - zj -------------------\n");
+		print_matrix(m);
+		printf("-------------------------------------------------------------------\n");
+	}
 
 	// step 1: find the pivot column
 	pivot_col = find_pivot_col(m);
 	PRINT("Pivot Column: %d\n", pivot_col);
 	if (pivot_col < 0)
 		return get_frac(m, 0, m->col - 1);
+	printf("step 1: find the pivot column -------------------\n");
+	print_matrix(m);
+	printf("-------------------------------------------------------------------\n");
 
 	// step 2: find the pivot row and the pivot value
 	pivot_row = find_pivot_row(m, pivot_col);
 	PRINT("Pivot row: %d\n", pivot_row);
+	printf("step 2: find the pivot row and the pivot value -------------------\n");
+	print_matrix(m);
+	printf("-------------------------------------------------------------------\n");
 
 	// step 2.5 : set basis
 	// cj is stored at m->row-3 
 	FRACTION *new_basis = get_frac(m, m->row-3, pivot_col);
 	FRACTION *basis = get_frac(m, pivot_row, 0);
 	assignf(basis, new_basis);
+	printf("step 2.5 : set basis -------------------\n");
+	print_matrix(m);
+	printf("-------------------------------------------------------------------\n");
 
 	assignf(&pivot, get_frac(m, pivot_row, pivot_col));
 	// step 3: divide the pivot row by the pivot value
 	divide_pivot_row(m, pivot_row, pivot_col, &pivot);
+	printf("step 3: divide the pivot row by the pivot value -------------------\n");
 	print_matrix(m);
+	printf("-------------------------------------------------------------------\n");
 
 	// step 4: eliminate values in the pivot column from other rows
 	eliminate_pivot_col(m, pivot_row, pivot_col, &pivot);

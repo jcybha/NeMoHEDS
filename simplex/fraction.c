@@ -59,6 +59,16 @@ void standardize(FRACTION * f) {
 }
 
 void addf(FRACTION * t, const FRACTION * f1, const FRACTION * f2) {
+	if (f1->num == 0) {
+		t->num = f2->num;
+		t->dem = f2->dem;
+		return ;
+	}
+	if (f2->num == 0) {
+		t->num = f1->num;
+		t->dem = f1->dem;
+		return ;
+	}
 	if (f1->dem == f2->dem) {
 		t->num = f1->num + f2->num;
 		t->dem = f1->dem;
