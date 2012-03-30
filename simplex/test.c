@@ -18,17 +18,21 @@ int v[] = { 1, 40, 30, 0, 0, 0, 0,
 #endif
 #define BIG_M 100000
 
-int v[] = { 1, 1, 2, 0, 0, BIG_M, BIG_M, 0,
-	    BIG_M, 1, 3,  0, 0, 1, 0, 3,
-   	    BIG_M, 3, 4, -1, 0, 0, 1, 6,
-	    0, 2, 1, 0, 1, 0, 0, 3,
-	    0, 4*BIG_M, 7*BIG_M, -BIG_M, 0, BIG_M, BIG_M, 0,
-	    0, 0, 0, 0, 0, 0, 0, 0,
+int v[] = { 
+	    1,     	1, 2, 0, 0, BIG_M, BIG_M,			0, // p
+
+	    BIG_M, 	1, 3,  0, 0, 1, 0,				3,
+   	    BIG_M, 	3, 4, -1, 0, 0, 1,				6,
+	    0,     	2, 1, 0, 1, 0, 0,				3,
+
+	    1,     1, 2, 0, 0, BIG_M, BIG_M,				0, // cj
+	    0,     4*BIG_M, 7*BIG_M, -BIG_M, 0, BIG_M, BIG_M, 		0, // zj
+	    0,     0, 0, 0, 0, 0, 0, 					0, // cj - zj
 };
 int main() {
 	//MATRIX * m = allocate_matrix(7, 17);
 	//MATRIX * m = allocate_matrix(4, 7);
-	MATRIX * m = allocate_matrix(6, 8);
+	MATRIX * m = allocate_matrix(7, 8);
 	load_from_array(m, v);
 
 	/* 1 : maximize */
