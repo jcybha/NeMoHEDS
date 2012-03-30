@@ -64,10 +64,10 @@ void addf(FRACTION * t, const FRACTION * f1, const FRACTION * f2) {
 		t->dem = f1->dem;
 		return;
 	}
-	int gcd_ = gcd(f1->dem, f2->dem);
+	int lcm_ = lcm(f1->dem, f2->dem);
 
-	t->num = f1->num * f1->dem / gcd_ + f2->num * f2->dem / gcd_;
-	t->dem = f1->dem * f2->dem / gcd_;
+	t->num = f1->num * lcm_ /f1->dem + f2->num * lcm_ / f2->dem;
+	t->dem = lcm_;
 
 	standardize(t);
 }
