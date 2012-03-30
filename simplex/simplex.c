@@ -27,28 +27,28 @@ static int find_pivot_col(MATRIX * m) {
 	int min_col = 1;
 	FRACTION min;
 
-	assignf(&min, get_frac(m, 0, 1));
-	for (i = 2; i < 4; i++) {
-//	for (i = 2; i < m->col - 1; i++) {
+//	for (i = 2; i < 4; i++) {
+	for (i = 1; i < m->col - 1; i++) {
 //		if (comparef(&min, get_frac(m, 0, i)) > 0) {
-		//if (maximize) {
-		if (1) {
-			if (comparef(&min, get_frac(m, 0, i)) < 0) {
-				assignf(&min, get_frac(m, 0, i));
+		if (maximize) {
+			if (i == 1 || comparef(&min, get_frac(m, m->row-1, i)) < 0) {
+				assignf(&min, get_frac(m, m->row-1, i));
 				min_col = i;
 			}
 		}
 		else {
-			if (comparef(&min, get_frac(m, 0, i)) > 0) {
-				assignf(&min, get_frac(m, 0, i));
+			if (i == 1 || comparef(&min, get_frac(m, m->row-1, i)) > 0) {
+				assignf(&min, get_frac(m, m->row-1, i));
 				min_col = i;
 			}
 		}
 	}
 
+#if 0
 	if (comparei(&min, 0) <= 0)
 		return -1;
-#if 0
+#endif
+#if 1
 	if (comparei(&min, 0) <= 0 && maximize)
 		return -1;
 
@@ -70,6 +70,9 @@ static int find_pivot_row(MATRIX * m, int pivot_col) {
 		FRACTION * f = get_frac(m, i, pivot_col);
 		if (comparei(f, 0) == 0)
 			continue;
+
+		if (comparei(get_frac(m, i, m->col - 1), 0) == 0)
+			return i;
 
 		divf(&ratio, f, get_frac(m, i, m->col - 1));
 
