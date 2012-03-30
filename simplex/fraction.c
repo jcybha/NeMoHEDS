@@ -7,7 +7,7 @@ int is_valid(const FRACTION * f) {
 }
 
 int is_integer(const FRACTION * f) {
-	return (f->dem == 1);
+	return (f->dem == 1) || (f->num == 0);
 }
 
 int gcd(int a, int b) {
@@ -73,15 +73,33 @@ void addf(FRACTION * t, const FRACTION * f1, const FRACTION * f2) {
 }
 
 void subf(FRACTION * t, const FRACTION * f1, const FRACTION * f2) {
+	if (f1->num == 0) {
+		t->num = -f2->num;
+		t->dem = f2->dem;
+		return ;
+	}
+	else if (f2->num == 0) {
+		t->num = f1->num;
+		t->dem = f1->dem;
+		return ;
+	}
+
+	printf("f1->num %d f1->dem %d f2->dem %d\n", f1->num, f1->dem, f2->dem);
+	if (f1->num == 3 && f1->dem == 1)
+		printf("err\n");
+
 	if (f1->dem == f2->dem) {
 		t->num = f1->num - f2->num;
 		t->dem = f1->dem;
 		return;
 	}
-	int gcd_ = gcd(f1->dem, f2->dem);
 
-	t->num = f1->num * f1->dem / gcd_ - f2->num * f2->dem / gcd_;
-	t->dem = f1->dem * f2->dem / gcd_;
+	int lcm_ = lcm(f1->dem, f2->dem);
+
+	t->num = f1->num * lcm_ / f1->dem - f2->num * lcm_ / f2->dem;
+	t->dem = lcm_;
+	if (f2->dem == 3)
+		printf("f1 %d %d f2 %d %d t %d %d \n", f1->num, f1->dem, f2->num, f2->dem, t->num, t->dem);
 
 	standardize(t);
 }
@@ -151,9 +169,9 @@ int comparef(const FRACTION * f1, const FRACTION * f2) {
 	if (f1->dem == f2->dem) {
 		return (f1->num - f2->num);
 	}
-	int gcd_ = gcd(f1->dem, f2->dem);
+	int lcm_ = lcm(f1->dem, f2->dem);
 
-	return (f1->num * f1->dem / gcd_ - f2->num * f2->dem / gcd_);
+	return (f1->num * lcm_ / f1->dem - f2->num * lcm_ / f2->dem);
 }
 
 void print_fraction(const FRACTION * f) {

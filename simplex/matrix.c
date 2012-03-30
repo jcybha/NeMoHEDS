@@ -25,7 +25,7 @@ void print_matrix(const MATRIX * m) {
 	for (i = 0; i < m->row; i++) {
 		for (j = 0; j < m->col; j++) {
 			print_fraction(get_frac((MATRIX *) m, i, j));
-			printf("\t");
+			printf("\t\t");
 		}
 		printf("\n");
 	}
