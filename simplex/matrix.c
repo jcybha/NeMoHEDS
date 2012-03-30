@@ -20,18 +20,19 @@ MATRIX * allocate_matrix(int row, int col) {
 void print_matrix(const MATRIX * m) {
 	int i;
 	int j;
+	char line[64];
 
 	printf("----- Matrix %p -----\n", m);
 	for (i = 0; i < m->row; i++) {
 		for (j = 0; j < m->col; j++) {
-			print_fraction(get_frac((MATRIX *) m, i, j));
-			printf("\t\t");
+			sprint_fraction(line, get_frac((MATRIX *) m, i, j));
+			printf("%12s", line);
 		}
 		printf("\n");
 	}
 }
 
-void load_from_array(MATRIX * m, int * array) {
+void load_from_array(MATRIX * m, const int * array) {
 	int i;
 	int j;
 

@@ -19,4 +19,4 @@ MATRIX * allocate_matrix(int row, int col);
 
 void print_matrix(const MATRIX * m);
 
-void load_from_array(MATRIX * m, int * array);
+void load_from_array(MATRIX * m, const int * array);

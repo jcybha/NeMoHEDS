@@ -189,3 +189,10 @@ void print_fraction(const FRACTION * f) {
 	else
 		printf("%d/%d", f->num, f->dem);
 }
+
+int sprint_fraction(char * str, const FRACTION * f) {
+	if (is_integer(f))
+		return sprintf(str, "%d", f->num);
+	else
+		return sprintf(str, "%d/%d", f->num, f->dem);
+}

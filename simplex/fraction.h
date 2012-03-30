@@ -35,3 +35,4 @@ int comparei(const FRACTION * f, int v);
 int comparef(const FRACTION * f1, const FRACTION * f2);
 
 void print_fraction(const FRACTION * f);
+int sprint_fraction(char * line, const FRACTION * f);
