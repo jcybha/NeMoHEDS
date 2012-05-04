@@ -5,15 +5,15 @@
 
 static int maximize = 0;
 
-static FRACTION * simplex_iter(MATRIX * m);
+static FRACTION * simplex_iter(char *x[], int r[], MATRIX * m);
 
-FRACTION * simplex(MATRIX * m, int maximize_a) {
+FRACTION * simplex(char *x[], int r[], MATRIX * m, int maximize_a) {
 	int i = 0;
 	FRACTION * result;
 	maximize = maximize_a;
 
 	PRINT_MATRIX(m);
-	while ((result = simplex_iter(m)) == NULL) {
+	while ((result = simplex_iter(x, r, m)) == NULL) {
 		PRINT("Interation Step %d is done\n", ++i);
 		PRINT_MATRIX(m);
 	}
@@ -185,7 +185,8 @@ void calculate_cj_minus_zj(MATRIX *m) {
 	}
 }
 
-static FRACTION * simplex_iter(MATRIX * m) {
+//static FRACTION * simplex_iter(MATRIX * m) {
+static FRACTION * simplex_iter(char *x[], int r[], MATRIX * m) {
 	int pivot_col;
 	int pivot_row;
 	FRACTION pivot;
@@ -218,6 +219,8 @@ static FRACTION * simplex_iter(MATRIX * m) {
 	printf("step 2: find the pivot row and the pivot value -------------------\n");
 	print_matrix(m);
 	printf("-------------------------------------------------------------------\n");
+
+    r[pivot_row] = pivot_col;
 
 	// step 2.5 : set basis
 	// cj is stored at m->row-3 
