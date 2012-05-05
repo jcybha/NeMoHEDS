@@ -81,7 +81,7 @@ int main() {
 	return 0;
 }
 #else
-int main(int argc, char **argv) {
+int parse_input_and_simplex(char *inputfilename) {
     int i;
     char *line = NULL;
     size_t linecap = 0;
@@ -99,12 +99,9 @@ int main(int argc, char **argv) {
     int *v = NULL;
     MATRIX *m = NULL;
 
-    if (argc != 2)
-        return -1;
-
-    fp = fopen(argv[1], "r");
+    fp = fopen(inputfilename, "r");
     if (fp == NULL) {
-        printf("Cannot open %s\n", argv[1]);
+        printf("Cannot open %s\n", inputfilename);
         return -1;
     }
 
@@ -226,10 +223,240 @@ int main(int argc, char **argv) {
     printf("\n");
     for (i = 1; i < SOLUTIONSIZE; i++) {
         printf("%s ", x[r[i]]);
-        print_fraction(get_frac(m, r[i], VARIABLESIZE));
+        print_fraction(get_frac(m, i, VARIABLESIZE));
     printf(", ");
     }
     printf("\n");
+
+    /* Free Memory */
+    for (i = 0; i < VARIABLESIZE; ++i)
+        free(x[i]);
+    free(x);
+    free(v);
+    free(r);
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    FILE *fp = NULL, *fpout = NULL;
+    char *line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    int i = 0, j = 0;
+
+    int currentFormular = 0;
+    int isSkippedFormularP = 0;
+    int numFormula = 0;
+    int numVariable = 0;
+    int numS = 0;
+    int numM = 0;
+    int Coeff[100][100];
+    int S[100];
+    int M[100];
+
+    memset(Coeff, 0x00, sizeof(int)*100*100);
+    memset(S, 0x00, sizeof(int)*100);
+    memset(M, 0x00, sizeof(int)*100);
+
+    if (argc != 2)
+        return -1;
+
+    fp = fopen(argv[1], "r");
+    if (fp == NULL) {
+        printf("Cannot open %s\n", argv[1]);
+        return -1;
+    }
+
+    while ((linelen = getline(&line, &linecap, fp)) > 0) {
+        char *sep = "\t\n";
+        char *word, *brkt;
+
+        /* If numFormula == 0, current line is the P = 30*(x11 + x12 + x13) + 80*(x21 + ... */
+        if (numFormula == 0) {
+            for (word = strtok_r(line, sep, &brkt);
+                    word;
+                    word = strtok_r(NULL, sep, &brkt)) {
+                numVariable++;
+                Coeff[0][numVariable] = atoi(word);
+            }
+        } else {
+            for (word = strtok_r(line, sep, &brkt);
+                    word;
+                    word = strtok_r(NULL, sep, &brkt)) {
+                if (!(word[0] >= '0' && word[0] <= '9')) {
+                    if (word[0] == 'G') { /* GT => -Sn + Mn */
+                        S[numFormula] = -1;
+                        numS++;
+                        M[numFormula] = 1;
+                        numM++;
+                    } else if (word[0] == 'L') { /* LT => +Sn */
+                        S[numFormula] = 1;
+                        numS++;
+                    } else if (word[0] == 'E') { /* EQ => +Mn */
+                        M[numFormula] = 1;
+                        numM++;
+                    }
+                }
+            }
+        }
+        numFormula++;
+    }
+    numFormula--; /* Decrease one count becase of P = ... */
+
+    fclose(fp);
+    fp = fopen(argv[1], "r");
+    fpout = fopen("/tmp/inter.txt", "w");
+
+    fprintf(fpout, "%d\n", 1 + numVariable + numS + numM);
+    fprintf(fpout, "NU ");
+    for (i = 1; i < numVariable + 1; ++i)
+        fprintf(fpout, "X%d\t", i);
+    for (i = 1; i < numS + 1; ++i)
+        fprintf(fpout, "S%d\t", i);
+    for (i = 1; i < numM; ++i)
+        fprintf(fpout, "M%d\t", i);
+    fprintf(fpout, "M%d\n", i);
+
+    fprintf(fpout, "%d\n%d\t", 1 + numFormula, 0);
+    {
+        int noMoreM = 0;
+        int cntM = numVariable + 1;
+        int cntS = numVariable + 1;
+        for (i = 1; i < numFormula; ++i) {
+            if(!noMoreM) {
+                fprintf(fpout, "%d\t", numS + cntM);
+                cntM++;
+                if ((cntM - 1 - numVariable) == numM)
+                    noMoreM = 1;
+            } else {
+                fprintf(fpout, "%d\t", cntS);
+                cntS++;
+            }
+        }
+        fprintf(fpout, "%d\n", cntS);
+    }
+
+    /* Matrix col */
+    fprintf(fpout, "%d\n", 1 + numVariable + numS + numM + 1);
+
+    /* Matrix row, 3 for Cj, Zj, Cj-Zj */
+    fprintf(fpout, "%d\n", 1 + numFormula + 3);
+
+    while ((linelen = getline(&line, &linecap, fp)) > 0) {
+        char *sep = "\t\n";
+        char *word, *brkt;
+        int didMeetGTLTEQ = 0;
+        int totalValue = 0;
+        int coefCnt = 1;
+
+        if (!isSkippedFormularP) {
+            isSkippedFormularP = 1;
+            fprintf(fpout, "1\t");
+            for (word = strtok_r(line, sep, &brkt);
+                    word;
+                    word = strtok_r(NULL, sep, &brkt)) {
+                fprintf(fpout, "%s\t", word);
+            }
+            for (i = 0; i < numS + numM; ++i)
+               fprintf(fpout, "0\t"); 
+            fprintf(fpout, "0\n"); 
+
+            currentFormular++;
+            continue;
+        }
+
+        /* Now, read and set S1...Sn , M1...Mn */
+        if (M[currentFormular] == 1)
+            fprintf(fpout, "M\t");
+        else
+            fprintf(fpout, "0\t");
+        for (word = strtok_r(line, sep, &brkt);
+                word;
+                word = strtok_r(NULL, sep, &brkt)) {
+            if (!(word[0] >= '0' && word[0] <= '9'))
+                didMeetGTLTEQ = 1;
+            if (!didMeetGTLTEQ) {
+                fprintf(fpout, "%s\t", word);
+                Coeff[currentFormular][coefCnt] = atoi(word);
+                coefCnt++;
+            }
+            else {
+                totalValue = atoi(word);
+            }
+        }
+        for (i = 1; i < numS + 1; ++i) {
+            if (currentFormular == i) {
+                fprintf(fpout, "%d\t", S[i]);
+                Coeff[currentFormular][coefCnt] = S[i];
+            }
+            else
+                fprintf(fpout, "0\t");
+            coefCnt++;
+        }
+        for (i = 1; i < numM + 1; ++i) {
+            if (currentFormular == i) {
+                fprintf(fpout, "%d\t", M[i]);
+                Coeff[currentFormular][coefCnt] = M[i];
+            }
+            else
+                fprintf(fpout, "0\t");
+            coefCnt++;
+        }
+        fprintf(fpout, "%d\n", totalValue);
+        Coeff[currentFormular][coefCnt] = totalValue;
+
+        currentFormular++;
+    }
+
+    /* Cj */
+    for (i = 0; i < 1 + numVariable + numS + numM; ++i) {
+        if (i == 0)
+            fprintf(fpout, "1\t");
+        else if (i >= 1 && i < 1 + numVariable) {
+            fprintf(fpout, "%d\t", Coeff[0][i]);
+        } else if (i >= 1 + numVariable && i < 1 + numVariable + numS)
+            fprintf(fpout, "0\t");
+        else if (i >= 1 + numVariable + numS && i < 1 + numVariable + numS + numM)
+            fprintf(fpout, "M\t");
+    }
+    fprintf(fpout, "0\n");
+
+    /* Zj */
+    fprintf(fpout, "0\t");
+    for (i = 1; i < 1 + numVariable + numS + numM; ++i) {
+        int colSum = 0;
+        for (j = 1; j < numM + 1; j++)
+            colSum = colSum + Coeff[j][i];
+        if (colSum == -1)
+            fprintf(fpout, "-M\t");
+        else if (colSum == 1)
+            fprintf(fpout, "M\t");
+        else if (colSum != 0)
+            fprintf(fpout, "%d*M\t", colSum);
+        else
+            fprintf(fpout, "0\t");
+    }
+    fprintf(fpout, "0\n");
+
+    /* Cj - Zj */
+    for (i = 0; i < 1 + numVariable + numS + numM; ++i)
+        fprintf(fpout, "0\t");
+    fprintf(fpout, "0\n");
+
+    fclose(fp);
+    fclose(fpout);
+
+    /*DEBUG*/
+    /*
+    for (j = 0; j < 1 + numFormula + 3; j++) {
+        for (i = 0; i < 1 + numVariable + numS + numM; i++)
+            printf("%d\t", Coeff[j][i]);
+        printf("%d\n", Coeff[j][i]);
+    }
+    */
+
+    parse_input_and_simplex("/tmp/inter.txt");
+
     return 0;
 }
 #endif
